@@ -74,9 +74,15 @@ restarts if it crashes.
 mkdir -p ~/Library/LaunchAgents ~/Library/Logs
 ```
 
-Create `~/Library/LaunchAgents/com.copilot-api.plist`:
+Create the plist with this block. It discovers the executable and Node
+location from Step 1, so it works with Homebrew, Intel Homebrew, nvm, or a
+manual Node installation without editing paths or replacing placeholders:
 
-```xml
+```bash
+COPILOT_API_BIN="$(command -v copilot-api)"
+NODE_BIN="$(dirname "$(command -v node)")"
+
+cat > "$HOME/Library/LaunchAgents/com.copilot-api.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -84,45 +90,36 @@ Create `~/Library/LaunchAgents/com.copilot-api.plist`:
 <dict>
   <key>Label</key>
   <string>com.copilot-api</string>
-
   <key>ProgramArguments</key>
   <array>
-    <string>/opt/homebrew/bin/copilot-api</string>
+    <string>${COPILOT_API_BIN}</string>
     <string>start</string>
     <string>--port</string>
     <string>4141</string>
   </array>
-
   <key>RunAtLoad</key>
   <true/>
-
   <key>KeepAlive</key>
   <true/>
-
   <key>StandardOutPath</key>
-  <string>REPLACE_WITH_HOME/Library/Logs/copilot-api.log</string>
-
+  <string>${HOME}/Library/Logs/copilot-api.log</string>
   <key>StandardErrorPath</key>
-  <string>REPLACE_WITH_HOME/Library/Logs/copilot-api.error.log</string>
-
+  <string>${HOME}/Library/Logs/copilot-api.error.log</string>
   <key>WorkingDirectory</key>
-  <string>REPLACE_WITH_HOME</string>
-
+  <string>${HOME}</string>
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>
-    <string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <string>${NODE_BIN}:${HOME}/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
   </dict>
 </dict>
 </plist>
+EOF
 ```
 
-Replace `REPLACE_WITH_HOME` with your actual home directory (e.g.
-`/Users/yourname`), and adjust `/opt/homebrew/bin/copilot-api` if the
-`which copilot-api` command from Step 1 points somewhere else (e.g. Intel
-Macs typically use `/usr/local/bin`). For `nvm` or another version-manager
-installation, also add its Node bin directory to the plist's `PATH`; launchd
-does not read your interactive shell's `~/.zshrc`.
+The plist uses the exact `copilot-api` and `node` locations selected by your
+current shell. If you later switch Node versions, recreate the plist and
+reload it so launchd uses the new installation.
 
 Load it:
 
