@@ -1,3 +1,4 @@
+import { state } from "~/lib/state"
 import {
   type ChatCompletionResponse,
   type ChatCompletionsPayload,
@@ -47,13 +48,42 @@ export function translateToOpenAI(
 }
 
 function translateModelName(model: string): string {
-  // Subagent requests use a specific model number which Copilot doesn't support
-  if (model.startsWith("claude-sonnet-4-")) {
-    return model.replace(/^claude-sonnet-4-.*/, "claude-sonnet-4")
-  } else if (model.startsWith("claude-opus-")) {
-    return model.replace(/^claude-opus-4-.*/, "claude-opus-4")
+  // Subagent requests can use a dated/suffixed model id (e.g. claude-opus-4-6,
+  // claude-opus-5-5[1m]) that Copilot's backend doesn't recognize verbatim.
+  // Resolve it against the live model list instead of blindly collapsing to a
+  // hardcoded (and potentially unsupported) family id.
+  const availableModels = state.models?.data.map((m) => m.id) ?? []
+  if (availableModels.length === 0) {
+    return model
   }
-  return model
+
+  const stripped = model.replace(/\[.*\]$/, "")
+  if (availableModels.includes(stripped)) {
+    return stripped
+  }
+
+  const match = /^claude-(opus|sonnet|haiku)-(\d+)-(\d+)/.exec(stripped)
+  if (match) {
+    const [, family, major, minor] = match
+    const dotted = `claude-${family}-${major}.${minor}`
+    if (availableModels.includes(dotted)) {
+      return dotted
+    }
+
+    const bare = `claude-${family}-${major}`
+    if (availableModels.includes(bare)) {
+      return bare
+    }
+
+    const familyModels = availableModels.filter(
+      (id) => id.startsWith(`claude-${family}-`) || id === `claude-${family}`,
+    )
+    if (familyModels.length > 0) {
+      return [...familyModels].sort().reverse()[0]
+    }
+  }
+
+  return stripped
 }
 
 function translateAnthropicMessagesToOpenAI(
@@ -67,6 +97,19 @@ function translateAnthropicMessagesToOpenAI(
       handleUserMessage(message)
     : handleAssistantMessage(message),
   )
+
+  // Some Copilot-backed models reject requests that end on an assistant
+  // message ("prefill"), requiring the conversation to end with a user turn.
+  // Claude Code's context-compaction / resume flow can produce exactly this
+  // shape, so append a synthetic continuation prompt when needed.
+  const lastMessage = otherMessages.at(-1)
+  if (lastMessage?.role === "assistant" && !lastMessage.tool_calls) {
+    otherMessages.push({
+      role: "user",
+      content:
+        "Continue exactly where you left off. Do not repeat any previously written text.",
+    })
+  }
 
   return [...systemMessages, ...otherMessages]
 }
