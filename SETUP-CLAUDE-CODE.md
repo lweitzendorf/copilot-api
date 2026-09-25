@@ -143,7 +143,20 @@ crashes.
 
 ## 3. Configure Claude Code to use it
 
-Edit `~/.claude/settings.json` (create it if it doesn't exist):
+The only setting that actually matters for routing Claude Code through the
+proxy is `ANTHROPIC_BASE_URL`. Edit `~/.claude/settings.json` (create it if
+it doesn't exist):
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://localhost:4141"
+  }
+}
+```
+
+That's the whole requirement — everything below is optional and unrelated to
+the Copilot bridge itself:
 
 ```json
 {
@@ -159,16 +172,19 @@ Edit `~/.claude/settings.json` (create it if it doesn't exist):
 
 Notes:
 
+- **`env.ANTHROPIC_BASE_URL`** — required. This is what makes Claude Code
+  talk to your local `copilot-api` proxy instead of Anthropic directly.
 - Only set **one** of `ANTHROPIC_API_KEY` / `ANTHROPIC_AUTH_TOKEN` (or
   neither, if you use a wrapper script that sets one for you — see below).
   Setting both at once triggers a "may not work as expected" warning in
-  Claude Code.
-- `"model": "opus[1m]"` uses Claude Code's dynamic `opus` alias (currently
-  resolves to the latest Opus, e.g. Opus 5.5), so you don't need to hardcode
-  a dated model id here. `copilot-api`'s dynamic resolution will map whatever
-  Claude Code sends to a real Copilot model id automatically.
-- `permissions.defaultMode: "auto"` puts sessions in auto-approval mode by
-  default (Pro/Max/Team plans already default to this).
+  Claude Code. Neither is actually needed to reach `copilot-api` itself.
+- `"model"` and `permissions.defaultMode` are just personal preference, not
+  part of the Copilot-bridge setup: `"model": "opus[1m]"` uses Claude Code's
+  dynamic `opus` alias so you don't have to hardcode a dated model id (and
+  `copilot-api`'s dynamic resolution will map whatever gets sent to a real
+  Copilot model id regardless); `permissions.defaultMode: "auto"` just puts
+  sessions in auto-approval mode by default (Pro/Max/Team plans already
+  default to this).
 
 Verify the model actually being served (don't just trust what the CLI
 displays) by checking `modelUsage` in a scripted call:
