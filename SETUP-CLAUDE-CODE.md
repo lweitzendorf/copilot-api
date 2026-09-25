@@ -199,29 +199,15 @@ local proxy instead of Anthropic directly.
 
 ## 4. Add to your shell config (`~/.zshrc`)
 
-`npm link` (Step 1) makes `copilot-api` available globally via npm's global
-bin directory. Confirm it's actually on your `PATH` (Homebrew-installed Node
-on macOS usually already has this covered — this mainly matters for
-`nvm`/manual Node installs):
+`copilot-api` runs as a `launchd` service (Step 2), so you don't need
+`copilot-api` on your `PATH` for day-to-day use. If you installed Node via
+Homebrew (the common case), `npm link`'s global bin dir (`/opt/homebrew/bin`)
+is already on `PATH` automatically via `brew shellenv` in `/etc/zprofile` —
+no `~/.zshrc` change needed. (Only if you use `nvm`/a manual Node install and
+`which copilot-api` prints nothing would you need to add npm's global bin
+dir — `npm config get prefix` — to `PATH` yourself.)
 
-```bash
-npm config get prefix   # e.g. /opt/homebrew, /usr/local, or ~/.nvm/versions/node/vX.Y.Z
-which copilot-api        # should print a path if it's already on PATH
-```
-
-If `which copilot-api` prints nothing, add npm's global bin dir to your
-`PATH` in `~/.zshrc`:
-
-```bash
-echo 'export PATH="$(npm config get prefix)/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-Since `copilot-api` runs as a `launchd` service (Step 2), you don't need to
-invoke the `copilot-api` binary yourself day-to-day — the `PATH` check above
-just makes sure `launchctl`/your shell can find it if you ever need to run it
-manually. A couple of optional quality-of-life aliases for managing the
-service:
+A couple of optional quality-of-life aliases for managing the service:
 
 ```bash
 alias copilot-api-status='launchctl print gui/$(id -u)/com.copilot-api | grep -i state'
