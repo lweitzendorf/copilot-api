@@ -42,6 +42,17 @@ Verify it's on your `PATH` and working:
 copilot-api --help
 ```
 
+`npm link` puts the command in npm's global bin directory. With the
+Homebrew Node installation used in this guide, that is `/opt/homebrew/bin`,
+which is why the launchd plist in Step 2 uses
+`/opt/homebrew/bin/copilot-api`. Confirm the actual location on your machine
+with:
+
+```bash
+which copilot-api
+npm prefix -g
+```
+
 The first time you run `copilot-api start`, it will prompt you to
 authenticate with your GitHub account (device-code flow) and cache a token
 locally.
@@ -107,9 +118,11 @@ Create `~/Library/LaunchAgents/com.copilot-api.plist`:
 ```
 
 Replace `REPLACE_WITH_HOME` with your actual home directory (e.g.
-`/Users/yourname`), and adjust `/opt/homebrew/bin/copilot-api` if `which
-copilot-api` points somewhere else (e.g. Intel Macs typically use
-`/usr/local/bin`).
+`/Users/yourname`), and adjust `/opt/homebrew/bin/copilot-api` if the
+`which copilot-api` command from Step 1 points somewhere else (e.g. Intel
+Macs typically use `/usr/local/bin`). For `nvm` or another version-manager
+installation, also add its Node bin directory to the plist's `PATH`; launchd
+does not read your interactive shell's `~/.zshrc`.
 
 Load it:
 
