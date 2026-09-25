@@ -165,36 +165,7 @@ it doesn't exist):
 }
 ```
 
-That's the whole requirement — everything below is optional and unrelated to
-the Copilot bridge itself:
-
-```json
-{
-  "env": {
-    "ANTHROPIC_BASE_URL": "http://localhost:4141"
-  },
-  "permissions": {
-    "defaultMode": "auto"
-  },
-  "model": "opus[1m]"
-}
-```
-
-Notes:
-
-- **`env.ANTHROPIC_BASE_URL`** — required. This is what makes Claude Code
-  talk to your local `copilot-api` proxy instead of Anthropic directly.
-- Only set **one** of `ANTHROPIC_API_KEY` / `ANTHROPIC_AUTH_TOKEN` (or
-  neither, if you use a wrapper script that sets one for you — see below).
-  Setting both at once triggers a "may not work as expected" warning in
-  Claude Code. Neither is actually needed to reach `copilot-api` itself.
-- `"model"` and `permissions.defaultMode` are just personal preference, not
-  part of the Copilot-bridge setup: `"model": "opus[1m]"` uses Claude Code's
-  dynamic `opus` alias so you don't have to hardcode a dated model id (and
-  `copilot-api`'s dynamic resolution will map whatever gets sent to a real
-  Copilot model id regardless); `permissions.defaultMode: "auto"` just puts
-  sessions in auto-approval mode by default (Pro/Max/Team plans already
-  default to this).
+That's the complete Claude Code configuration required for `copilot-api`.
 
 Verify the model actually being served (don't just trust what the CLI
 displays) by checking `modelUsage` in a scripted call:
