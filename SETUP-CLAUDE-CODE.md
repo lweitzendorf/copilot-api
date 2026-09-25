@@ -181,7 +181,47 @@ claude -p "reply with just the word OK" --output-format json \
 That's it — run `claude` normally and it will talk to GitHub Copilot via the
 local proxy instead of Anthropic directly.
 
-## 4. (Optional) Model-switching wrapper (`claude-switch` / `ccc-*` aliases)
+## 4. Add to your shell config (`~/.zshrc`)
+
+`npm link` (Step 1) makes `copilot-api` available globally via npm's global
+bin directory. Confirm it's actually on your `PATH`:
+
+```bash
+npm config get prefix   # e.g. /opt/homebrew, /usr/local, or ~/.nvm/versions/node/vX.Y.Z
+which copilot-api        # should print a path if it's already on PATH
+```
+
+If `which copilot-api` prints nothing, add npm's global bin dir to your
+`PATH` in `~/.zshrc`:
+
+```bash
+echo 'export PATH="$(npm config get prefix)/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+(Homebrew-installed Node on macOS usually already has this on `PATH`
+automatically — this step mainly matters for `nvm`/manual Node installs.)
+
+Since `copilot-api` runs as a `launchd` service (Step 2), you generally don't
+need to invoke it directly yourself day-to-day. Still, a couple of optional
+`~/.zshrc` additions are handy:
+
+```bash
+# Quick health check / restart shortcuts
+alias copilot-api-status='launchctl print gui/$(id -u)/com.copilot-api | grep -i state'
+alias copilot-api-restart='launchctl kickstart -k gui/$(id -u)/com.copilot-api'
+alias copilot-api-logs='tail -f ~/Library/Logs/copilot-api.log ~/Library/Logs/copilot-api.error.log'
+
+# Launch Claude Code pinned to a specific model via the proxy, bypassing
+# whatever "model" is set in settings.json (see the precedence note below)
+alias ccc-opus='ANTHROPIC_BASE_URL=http://localhost:4141 claude --model claude-opus-5.5'
+alias ccc-sonnet='ANTHROPIC_BASE_URL=http://localhost:4141 claude --model claude-sonnet-5'
+```
+
+Reload your shell (`source ~/.zshrc` or open a new terminal) for these to
+take effect.
+
+## 5. (Optional) Model-switching wrapper (`claude-switch` / `ccc-*` aliases)
 
 If you use a wrapper script that launches Claude Code with a specific
 `--model` per invocation (such as the `claude-switch` script from
