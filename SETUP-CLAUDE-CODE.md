@@ -248,6 +248,5 @@ be aware:
 |---|---|---|
 | `400 model_not_supported` | Claude Code sent a dated model id Copilot doesn't recognize verbatim | Confirm you're running the fork's `dist/main.js` (not upstream / an old cached global install) |
 | `400 ... assistant message prefill ... must end with a user message` | Conversation ends on an assistant turn (compaction/resume) | Same as above — this fork patches around it |
-| `Both ANTHROPIC_AUTH_TOKEN and ANTHROPIC_API_KEY set` warning | Both env vars set from different sources (e.g. `settings.json` + a wrapper script) | Only set one; remove the redundant one from `settings.json` |
 | copilot-api not reachable / connection refused | Service isn't running | `launchctl print gui/$(id -u)/com.copilot-api`, check `~/Library/Logs/copilot-api.error.log` |
 | `npm install -g <user>/copilot-api` fails or silently produces a broken binary | Known npm limitation with global git-dependency installs | Use the local install + `npm link` method in Step 1 instead |
