@@ -11,4 +11,9 @@ node_modules/
 .eslintcache
 
 # build output
-dist/
+# NOTE: dist/ is intentionally committed on this fork (unlike upstream) so
+# that `npm install -g <user>/copilot-api` works. npm's global installer does
+# not reliably install devDependencies or run build-dependent lifecycle
+# scripts for git dependencies, so a pre-built dist/main.js avoids requiring
+# a build step (and the bun toolchain) at install time. Regenerate with
+# `npm run build` and commit the result whenever src/ changes.
