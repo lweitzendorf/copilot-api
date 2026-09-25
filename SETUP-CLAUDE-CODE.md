@@ -196,10 +196,9 @@ alias copilot-api-restart='launchctl kickstart -k gui/$(id -u)/com.copilot-api'
 alias copilot-api-logs='tail -f ~/Library/Logs/copilot-api.log ~/Library/Logs/copilot-api.error.log'
 ```
 
-**If you use [`cc-copilot-bridge`](https://github.com/FlorianBruniaux/cc-copilot-bridge)'s
-`claude-switch`** (see Step 5 below), its model-alias generator gives you the
-`ccc-*` shortcuts for free instead of hand-writing them — add this to
-`~/.zshrc`:
+If you already use [`cc-copilot-bridge`](https://github.com/FlorianBruniaux/cc-copilot-bridge)'s
+`claude-switch`, its model-alias generator gives you the `ccc-*` shortcuts
+for free instead of hand-writing them — add this to `~/.zshrc`:
 
 ```bash
 eval "$(claude-switch --shell-config)"
@@ -221,26 +220,6 @@ alias claude="COPILOT_MODEL=claude-opus-5.5 claude-switch copilot --model 'opus[
 
 Reload your shell (`source ~/.zshrc` or open a new terminal) for any of
 these to take effect.
-
-## 5. (Optional) Model-switching wrapper (`claude-switch` / `ccc-*` aliases)
-
-If you use a wrapper script that launches Claude Code with a specific
-`--model` per invocation (such as the `claude-switch` script from
-[`cc-copilot-bridge`](https://github.com/FlorianBruniaux/cc-copilot-bridge)),
-be aware:
-
-- **The `--model` flag / the wrapper's model env var always wins** over
-  `settings.json`'s `"model"` key and `CLAUDE_CODE_MODEL` — Claude Code's CLI
-  flag has the highest precedence. If your alias hardcodes an old model id
-  (e.g. `claude-opus-4-6`), that's what actually gets served, even if
-  `settings.json` or the UI displays something newer — this fork's dynamic
-  resolution will still map it to a working model, but not necessarily the
-  latest one you might expect.
-- To target a specific model explicitly, set the wrapper's model variable to
-  the exact id you want, e.g.:
-  ```bash
-  COPILOT_MODEL=claude-opus-5.5 claude-switch copilot
-  ```
 
 ## Troubleshooting
 
