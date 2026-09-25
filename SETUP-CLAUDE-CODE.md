@@ -184,7 +184,9 @@ local proxy instead of Anthropic directly.
 ## 4. Add to your shell config (`~/.zshrc`)
 
 `npm link` (Step 1) makes `copilot-api` available globally via npm's global
-bin directory. Confirm it's actually on your `PATH`:
+bin directory. Confirm it's actually on your `PATH` (Homebrew-installed Node
+on macOS usually already has this covered — this mainly matters for
+`nvm`/manual Node installs):
 
 ```bash
 npm config get prefix   # e.g. /opt/homebrew, /usr/local, or ~/.nvm/versions/node/vX.Y.Z
@@ -199,27 +201,43 @@ echo 'export PATH="$(npm config get prefix)/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-(Homebrew-installed Node on macOS usually already has this on `PATH`
-automatically — this step mainly matters for `nvm`/manual Node installs.)
-
-Since `copilot-api` runs as a `launchd` service (Step 2), you generally don't
-need to invoke it directly yourself day-to-day. Still, a couple of optional
-`~/.zshrc` additions are handy:
+Since `copilot-api` runs as a `launchd` service (Step 2), you don't need to
+invoke the `copilot-api` binary yourself day-to-day — the `PATH` check above
+just makes sure `launchctl`/your shell can find it if you ever need to run it
+manually. A couple of optional quality-of-life aliases for managing the
+service:
 
 ```bash
-# Quick health check / restart shortcuts
 alias copilot-api-status='launchctl print gui/$(id -u)/com.copilot-api | grep -i state'
 alias copilot-api-restart='launchctl kickstart -k gui/$(id -u)/com.copilot-api'
 alias copilot-api-logs='tail -f ~/Library/Logs/copilot-api.log ~/Library/Logs/copilot-api.error.log'
-
-# Launch Claude Code pinned to a specific model via the proxy, bypassing
-# whatever "model" is set in settings.json (see the precedence note below)
-alias ccc-opus='ANTHROPIC_BASE_URL=http://localhost:4141 claude --model claude-opus-5.5'
-alias ccc-sonnet='ANTHROPIC_BASE_URL=http://localhost:4141 claude --model claude-sonnet-5'
 ```
 
-Reload your shell (`source ~/.zshrc` or open a new terminal) for these to
-take effect.
+**If you use [`cc-copilot-bridge`](https://github.com/FlorianBruniaux/cc-copilot-bridge)'s
+`claude-switch`** (see Step 5 below), its model-alias generator gives you the
+`ccc-*` shortcuts for free instead of hand-writing them — add this to
+`~/.zshrc`:
+
+```bash
+eval "$(claude-switch --shell-config)"
+```
+
+This defines aliases like `ccc='claude-switch copilot'`,
+`ccc-opus='COPILOT_MODEL=claude-opus-4-6 claude-switch copilot'`,
+`ccc-sonnet='COPILOT_MODEL=claude-sonnet-4-6 claude-switch copilot'`, etc.
+(run `claude-switch --shell-config` yourself to see the full current list —
+it changes as the bridge is updated). Note these hardcode specific dated
+model ids; this fork's dynamic model resolution will still map them to a
+working model, but you may prefer to override the version, e.g.:
+
+```bash
+# Always launch plain `claude` through Copilot, pinned to a specific model,
+# instead of hitting Anthropic directly
+alias claude="COPILOT_MODEL=claude-opus-5.5 claude-switch copilot --model 'opus[1m]'"
+```
+
+Reload your shell (`source ~/.zshrc` or open a new terminal) for any of
+these to take effect.
 
 ## 5. (Optional) Model-switching wrapper (`claude-switch` / `ccc-*` aliases)
 
