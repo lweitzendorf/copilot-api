@@ -27,8 +27,8 @@
     "knip": "knip-bun",
     "lint": "eslint --cache",
     "lint:all": "eslint --cache .",
-    "prepack": "bun run build",
-    "prepare": "simple-git-hooks",
+    "prepack": "npm run build",
+    "prepare": "npm run build && (simple-git-hooks || true)",
     "release": "bumpp && bun publish --access public",
     "start": "NODE_ENV=production bun run ./src/main.ts",
     "typecheck": "tsc"
